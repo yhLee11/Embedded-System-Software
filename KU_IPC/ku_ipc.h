@@ -1,0 +1,6 @@
+#define KUIPC_MAXMSG 2
+#define KUIPC_MAXVOL 100 //bytes
+#define KU_IPC_CREAT 0x01 //01000
+#define KU_IPC_EXCL 0x02 //02000
+#define KU_IPC_NOWAIT 0x03 //04000
+#define KU_IPC_NOERROR 0x04 //05000
