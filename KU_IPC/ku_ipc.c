@@ -29,7 +29,6 @@
 
 MODULE_LICENSE("GPL");
 
-spinlock_t lock;
 static dev_t dev_num;
 static struct cdev *cd_cdev;
 
@@ -75,14 +74,27 @@ static long ku_ipc_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				return -EFAULT;
 			}
 			
-			
 			int id3 = node1->msg.msqid;
-	
-			wait_event(wq, msg_head[id3].count < KUIPC_MAXMSG);
-	
-			list_add_tail(&node1->list, &msg_head[id3].list);
+
+			switch(node1->msg.msgflg){	
+				case 0:
+					wait_event(wq, msg_head[id3].count < KUIPC_MAXMSG);
+					
+					list_add_tail(&node1->list, &msg_head[id3].list);
 			
-			msg_head[id3].count += 1;
+					msg_head[id3].count += 1;
+
+					return 0;
+
+				case KU_IPC_NOWAIT:
+					if(msg_head[id3].count==KUIPC_MAXMSG){
+						printk("queue[%d] is full\n",id3);
+						return -1;
+					}
+					list_add_tail(&node1->list, &msg_head[id3].list);
+					msg_head[id3].count+=1;
+			}
+
 
 		case READ://msgrcv()
 			printk("IOCTL READ: msgrcv()\n");
@@ -207,18 +219,19 @@ struct file_operations ipc_fops = {
 };
 static int __init ku_ipc_init(void){
 	printk("ku_ipc: Init module\n");
-	int i=0;
-	for(i=0; i<10; i++){
-		
-		INIT_LIST_HEAD(&msg_head[i].list);
-		msg_head[i].count=0;
-		msg_head[i].msg.msqid=i;
-	}
 
 	alloc_chrdev_region(&dev_num, 0, 1, DEV_NAME);
 	cd_cdev = cdev_alloc();
 	cdev_init(cd_cdev, &ipc_fops);
 	cdev_add(cd_cdev, dev_num, 1);
+
+	int i=0;
+	for(i=0; i<10;i++){
+		INIT_LIST_HEAD(&msg_head[i].list);
+		msg_head[i].count =0;
+		msg_head[i].msg.msqid=i;
+	}
+	init_waitqueue_head(&wq);
 
 	return 0;
 }

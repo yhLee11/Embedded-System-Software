@@ -91,25 +91,9 @@ int ku_msgsnd(int msqid, void *msgp, int msgsz, int msgflg){
 	printf("ku_msgsnd()\n");
 
 	int ret = 0;	
-	int cnt = ioctl(fd, CHECK, msqid);
 
-	if(cnt==KUIPC_MAXMSG){
-		switch(msgflg){
-		case KU_IPC_NOWAIT:
-			printf("ku_ipc_nowait queue is full\n");
-		
-
-		case 0:
-			printf("blocking\n");
-							
-			ret=ioctl(fd, WRITE, &msgp); 	
-			return 0;
-	
-		}
-	}else{
-		ret = ioctl(fd, WRITE, &msgp);
-		return 0;
-	}
+	ret = ioctl(fd, WRITE, &msgp);
+	return ret;
 	
 
 }

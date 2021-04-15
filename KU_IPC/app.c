@@ -26,9 +26,11 @@ int main(void){
 	int ret;
 	ret =ku_msgget(b.msqid,b.msgflg);
 	printf("%d\n",ret);
-
-	ku_msgsnd(b.msqid, &b, b.msgsz, 0);
-	//ku_msgrcv(b.msqid, &tmp, b.msgsz,3, 0);
+ //	ret=ku_msgclose(3);
+//	printf("%d\n",ret);
+	ret=ku_msgsnd(b.msqid, &b, b.msgsz, 0);
+	printf("msgsnd: %p\n",b);
+//	ku_msgrcv(b.msqid, &tmp, b.msgsz,3, 0);
 
 
 
